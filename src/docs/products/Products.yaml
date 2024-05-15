@@ -1,0 +1,218 @@
+openapi: "3.0.1"
+info:
+  title: API Products
+  version: "1.0"
+tags: 
+- name: product
+  description: oferta y búsqueda de productos
+paths:
+  /products:
+    get:
+      tags:
+      - product
+      summary: Obtienes todos los productos paginados
+      parameters:
+        - name: page
+          in: query
+          description: Número de página
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            mininum: 1
+            maximum: 10
+          examples:       
+            1:        
+              value: 1
+              summary: Limitar la cantidad de resultados en 1  
+            5: 
+              value: 5  
+              summary: Limitar la cantidad de resultados en 5
+        - name: sort
+          in: query
+          description: Ordenar según precio de productos
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: cat
+          in: query
+          description: Filtrar por categoría de producto
+          required: false
+          schema:
+            type: string
+            enum:
+              - fijacion
+              - herramientas
+        - name: query
+          in: query
+          description: Buscar producto por nombre
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Se han entregado los productos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  productsDocs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    type: object
+                    properties:
+                      totalItems:
+                        type: integer
+                        description: Número total de productos
+                        example: 25
+                      totalPages:
+                        type: integer
+                        description: Número total de páginas
+                        example: 10
+                      currentPage:
+                        type: integer
+                        description: Número de página actual
+                        example: 2          
+                      nextPage:
+                        type: integer
+                        description: Número de la siguiente página
+                        example: 3
+                      prevPage:
+                        type: integer
+                        description: Número de la página anterior
+                        example: 1
+                  cartId:
+                    type: string
+                    description: Id del cart si es que hay uno creado 
+                    example: 6090b4b75d08ba001f0e8409
+                  catArray:
+                    type: array
+                    items: 
+                      type: strings
+                    example: 
+                      - "fijacion"
+                      - "herramientas"
+                  cat:
+                    type: string
+                    description: Filtro de categoría si hay
+                    example: fijacion
+                  user:
+                    type: string
+                    description: rol del usuario
+                    example: cliente
+        "500":
+          description: Error generado por el servidor
+    post:
+      tags:
+        - products
+      summary: Agregar un nuevo producto (Solo administrador)
+      description: Agregar un nuevo producto (Solo administrador)
+      requestBody:
+        description: Crear un nuevo producto
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      responses:
+        '200':
+          description: 'new product added'
+        '500':
+          description: 'Internal Server Error'
+  /products/stock:
+    patch:
+      tags:
+        - products
+      summary: Actualizar el stock de un producto (Solo administrador)
+      description: Actualizar el stock de un producto (Solo administrador)
+      requestBody:
+        description: Ingreso de datos de stock y Id de producto
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Stock'
+      responses:
+        '200':
+          description: 'Stock updated succesfully'
+        '500':
+          description: 'Internal Server Error'
+  /product/{id}:
+    delete:
+      tags:
+        - products
+      summary: Borrar un producto
+      description: Borrar un producto
+      parameters:
+      - name: id
+        in: path
+        description: Id del producto a borrar
+        required: true
+        schema:
+          type: string
+          example: 6090b4b75d08ba001f0e8409
+      responses:
+        '200':
+          description: 'Product deleted succesfully'
+        '500':
+          description: 'Internal Server Error'
+
+        
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        _id:
+          type: ObjectId
+          description: Id autogenerado de mongo
+        title:
+          type: string
+          description: Título del producto
+        description:
+          type: string
+          description: Descripción del producto
+        code:
+          type: string
+          description: Código del producto
+        price:
+          type: number
+          description: Precio del producto
+        stock:
+          type: number
+          description: Stock del producto
+        category:
+          type: string
+          description: Categoría del producto
+        status:
+          type: boolean
+          description: Estado del producto a nivel interno (no visible)
+      example:
+        _id: ObjectId("6090b4b75d08ba001f0e8409")
+        title: Tornillo
+        description: Tornillo de hierro común
+        code: FIJ123
+        price: 1
+        stock: 5000
+        category: fijacion
+        status: true
+    Stock:
+      type: object
+      properties:
+        prodId:
+          type: string
+          description: Id del producto a actualizar
+          example: 6090b4b75d08ba001f0e8409
+        stock:
+          type: int
+          description: Cantidad de stock a actualizar
+          example: 5000

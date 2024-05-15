@@ -1,0 +1,23 @@
+<h3>Perfil de {{user.first_name}} {{user.last_name}}</h2>
+
+
+<p>Nombre: {{user.first_name}}</p>
+<p>Apellido: {{user.last_name}}</p>
+<p>Edad: {{user.age}}</p>
+<p>email: {{user.email}}</p>
+<p>rol: {{user.role}}</p>
+
+{{#if user.cart}}
+  <p>Hay un carrito creado</p>
+<a href="/carts/{{user.cart}}"><button>Ver carrito</button></a>
+{{/if}}
+
+<h4>Compras hechas: </h4>
+
+<a href="/products"><button>Ver productos</button></a>
+
+  <form action="" id="logOutForm">
+      <button type="submit">Cerrar Sesión</button>
+  </form>
+
+<script src="/js/products.js"></script>
