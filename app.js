@@ -1,186 +1,266 @@
-import express from "express";
-import { engine } from 'express-handlebars';
-import mongoose from "mongoose";
-import http from 'http';
-import { Server } from 'socket.io'; 
-import cartsRouter from "./routes/carts.route.js";
-import Cart from './dao/models/cart.schema.js';
-import prodsRouter from './routes/products.route.js';
-import session from "express-session";
-import cookieParser from "cookie-parser";
-import MongoStore from "connect-mongo";
-import sessionsRouter from './routes/session.js';
-import viewRouter from "./routes/views.js"
-import UsersDAO from "./dao/users.dao.js";
-import passport from "passport";
-import initializePassport from "./config/passport.config.js";
-import config from "./config/config.js";
-import generateMockProducts from "./mocking/mocking.js";
-import logger from "./loggertest/loggertest.js";
-import premiumRoutes from './routes/premium.route.js'
-import swaggerRouter from "./swagger.js";
-import swaggerSpec from "./swagger.js";
-import swaggerUi from "swagger-ui-express";
+const express = require('express');
+const http = require('http');
+const helmet = require('helmet');
+const exphbs = require('express-handlebars');
+const path = require('path');
+const { auth } = require('./src/middleware/authetication.middleware');
+const verifyRole = require('./src/middleware/verifyRole.middleware');
 
+const { Server: ServerIO } = require('socket.io');
+const cors = require('cors');
+const cookieParser = require ('cookie-parser');
+const { authTokenMiddleware } = require('./src/utils/jsonwebtoken');
+const handleErrors = require('./src/middleware/errors/index');
 
-// Función para validar ObjectId
-function isValidObjectId(id) {
-    return /^[0-9a-fA-F]{24}$/.test(id);
-}
-initializePassport();
+//------------------------------LOGGER------------------------------
+const loggerTestRoutes = require('./src/routes/loggerTest');
+const { addLogger, logger } = require('./src/utils/logger');
 
+//------------------------------CONFIGURACION------------------------------
+const {configObject } = require('./src/config/config');
+
+//------------------------------SESSION------------------------------
+const FileStore = require('session-file-store')
+
+const sessionRouter = require('./src/routes/session.router');
+const passport = require('passport')
+const { initializePassport } = require('./src/config/passport.config')
+
+//------------------------------MODELS------------------------------
+const { productModel } = require('./src/dao/models/products.model');
+const Messages = require('./src/dao/models/chat.model');
+
+//------------------------------MANAGERS------------------------------
+const ProductManager = require('./src/dao/managers/MDB/ProductManager');
+const CartManager = require('./src/dao/managers/MDB/CartManager'); 
+
+//------------------------------ROUTERS------------------------------
+const chatRouter = require('./src/routes/chat');
+const purchaseRoutes = require('./src/routes/purchase');
+const usersRouter = require('./src/routes/user.router');
+const cartRouter = require('./src/routes/cart.router');
+const productRouter = require('./src/routes/product.router');
+const mockingProductRouter = require('./src/routes/mocking.products');
+
+//------------------------------GESTOR------------------------------
+const productManager = new ProductManager(productModel);
+const cartManager = new CartManager();
+
+const bodyParser = require('body-parser');
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server); 
+const io = new ServerIO(server, {
+  cors: {
+    origin: '*',
+  },
+});
 
-// View engine
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
-app.set('views', './views');
+//  ------------------------------Middleware para configurar la política de seguridad de contenido ------------------------------
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      "script-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://cdn.socket.io/"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
 
-// Public folder
-app.use(express.static('public'));
+    },
+  })
+);
 
-// Middlewares request
+//  ------------------------------------------------------------Middleware-------------------------------------------------------
 app.use(express.json());
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-app.use(cookieParser());
-app.use(session({
-    store:MongoStore.create({
-        mongoUrl:config.mongoDB.url,
-        ttl: config.session.ttl,
-    }),
-    secret: config.session.secret,
-    resave: true,
-    saveUninitialized: true
-}));
-
-app.use("/api/sessions", sessionsRouter);
-app.use("/", viewRouter);
-
-//Swagger
-app.use('/api-docs', swaggerUi.serve);
-app.get('/api-docs', swaggerUi.setup(swaggerSpec));
-
-// Middleware global para todas las rutas
-app.use(async (req, res, next) => {
-    if (req.session.user) {
-        res.locals.user = await UsersDAO.getUserByID(req.session.user);
-    } else {
-        res.locals.user = null;
-    }
-    logger.debug(`Request received: ${req.method} ${req.url}`);
-    next();
-});
-
+app.use(cookieParser('cookiefirmada'));
+initializePassport();
 app.use(passport.initialize());
-app.use(passport.session());
 
-// Router productos
-app.use("/products", prodsRouter);
+app.use(addLogger);
 
-// Router Carts
-app.use("/carts", cartsRouter);
-
-// Asociar las rutas premium a /api/users/premium
-app.use('/api/users/premium', premiumRoutes);
-
-// Nueva ruta para eliminar productos
-app.get("/products/remove", (req, res) => {
-    console.log('Intentando renderizar la vista remove-product');
-
-    try {
-        res.render('remove-product');
-        console.log('Vista remove-product renderizada con éxito');
-    } catch (error) {
-        console.error('Error al renderizar la vista remove-product:', error);
-        res.status(500).send('Error interno del servidor');
-    }
+//  -----------------------------------------------------Configuración de Handlebars ------------------------------------------
+const hbs = exphbs.create({
+  extname: 'handlebars',
+  defaultLayout: 'main',
+  layoutsDir: path.join(__dirname, 'src', 'views', 'layouts'),
+  runtimeOptions: {
+    allowProtoPropertiesByDefault: true,
+    allowProtoMethodsByDefault: true,
+  },
+  helpers: {
+    eq: function (a, b) {
+      return a === b;
+    },
+  },
 });
 
-// modelo del carrito
-app.get('/mostrar_carrito', async (req, res) => {
-    try {
-      const carrito = await Cart.findOne({ });
-      res.json(carrito);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error al obtener el carrito');
-    }
+app.engine('handlebars', hbs.engine);
+app.set('views', path.join(__dirname, 'src', 'views'));
+app.set('view engine', 'handlebars');
+
+
+//  --------------------------------------------------Rutas principales u otras rutas ------------------------------
+
+app.use('/session', sessionRouter);
+
+app.get('/login', (req, res) => {
+  res.render('login');4
+
 });
 
-// Ruta para el endpoint /mockingproducts
-app.get('/mockingproducts', async (req, res) => {
-    console.log('Se ha llamado a la ruta /mockingproducts');
-    try {
-        const mockProducts = generateMockProducts(100); // Genera 100 productos de prueba
-        res.json(mockProducts); // Devuelve los productos de prueba en formato JSON
-    } catch (error) {
-        console.error('Error al generar productos de prueba:', error);
-        res.status(500).send('Error interno del servidor');
-    }
+app.get('/register', (req, res) => {
+  res.render('register');
 });
 
-// Definición del endpoint /loggerTest
-app.get('/loggerTest', (req, res) => {
-    logger.debug('Mensaje de debug desde /loggerTest');
-    logger.info('Mensaje de info desde /loggerTest');
-    logger.error('Mensaje de error desde /loggerTest');
-    res.send('Logs enviados desde /loggerTest');
+app.get('/', authTokenMiddleware, (req, res) => {
+  const user = req.user;
+  res.render('index', { user });
 });
 
-// Home del sitio
-app.get("/", (req, res) => {
-    res.redirect("/home");
+app.use('/users', usersRouter);
+
+app.use('/inventario', productRouter);
+
+app.use('/cart', cartRouter);
+
+app.use('/chat', chatRouter);
+
+const testRouter = require('./src/routes/testRouter'); 
+app.use('/pruebas', testRouter);
+
+app.use('/mockingproducts', mockingProductRouter);
+
+app.use('/loggerTest', loggerTestRoutes);
+
+app.use(handleErrors);
+
+//-----------------------------PARA BORRAR---------------------------------
+app.get('/home', (req, res) => {
+  res.render('home', { products: productManager.products });
 });
 
-app.get("/home", (req, res) => {
-    res.render("home");
+app.get('/realTimeProducts', (req, res) => {
+  res.render('realTimeProducts', { products: productManager.products });
 });
+//-----------------------------PARA BORRAR---------------------------------
 
-app.get("/ping", (req, res) => {
-    res.send("Pong!");
-});
 
-app.get("/chat", (req, res) => {
-    res.render("chat");
-});
 
-// Página error 404
-app.use((req, res, next) => {
-    res.render("404");
-});
+app.get('/products', auth, verifyRole('user'), async (req, res) => {
+  try {
+    const { limit = 10, page = 1 } = req.query;
 
-// Manejo de conexiones de socket
-io.on('connection', (socket) => {
-    console.log('Usuario conectado al chat');
+    const result = await productManager.getProducts({ limit, page });
 
-    // Lógica para manejar mensajes de chat
-    socket.on('chat message', (msg) => {
-        io.emit('chat message', msg); // Envia el mensaje a todos los usuarios conectados
+    const user = req.user;
+
+    res.render('products', {
+      products: result.docs,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+      page: result.page,
+      currentLimit: limit,
+      user,  // Pasar el usuario a la vista
     });
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({ error: 'Error al obtener los productos' });
+  }
+});
 
-    // Lógica para manejar desconexiones de usuarios
-    socket.on('disconnect', () => {
-        console.log('Usuario desconectado del chat');
-    });
+app.post('/vistaproduct', async (req, res) => {
+  try {
+      const productId = req.body.productId;
+
+      // Obtén el producto específico según el ID
+      const product = await productManager.getProductById(productId);
+
+      // Renderiza la vista con la información del producto
+      res.render('vistaproduct', { product });
+
+  } catch (error) {
+      logger.error(error);
+      res.status(500).json({ error: 'Error al obtener el producto' });
+  }
 });
 
 
 
-// Conexión MongoDB
-mongoose.connect(config.mongoDB.url);
 
-mongoose.connection.on('error', err => {
-    console.error('MongoDB Connection Error:', err);
+
+app.use('/purchase', (req, res, next) => {
+
+  if (req.isAuthenticated()) {
+    req.body.userId = req.user.id;
+  }
+  next(); 
+}, purchaseRoutes);
+
+
+
+//  -----------------------------------------------------Servir archivos estáticos -------------------------------------------------
+app.use(express.static(path.join(__dirname, 'src', 'public')));
+
+
+
+// ---------------------------------------------------Socket del lado del servidor ----------------------------------------------------
+io.on('connection', async (socket) => {
+  logger.info('Cliente conectado');
+
+  // Lógica para productos
+  // Obtener la lista de productos y enviarla al cliente cuando se conecta
+  const productList = await productManager.getProducts();
+  io.to(socket.id).emit('updateProducts', productList);
+
+  // Manejar evento de nuevo producto
+  socket.on('newProduct', async (newProduct) => {
+    await productManager.addProduct(newProduct);
+    const updatedProductList = await productManager.getProducts();
+    io.emit('updateProducts', updatedProductList);
+  });
+
+  // Manejar evento de eliminación de producto
+  socket.on('deleteProduct', async ({ productId }) => {
+    const result = await productManager.deleteProduct(productId);
+    if (result.success) {
+      const updatedProductList = await productManager.getProducts();
+      io.emit('updateProducts', updatedProductList);
+    }
+    io.to(socket.id).emit('deleteProduct', result);
+  });
+
+
+//---------------- LOGICA PARA MENSAJES------------------
+
+  // Obtener mensajes existentes y enviarlos al cliente recién conectado
+  try {
+    const messages = await Messages.find();
+    socket.emit('messages', messages);
+  } catch (error) {
+    logger.error('Error al obtener mensajes existentes:', error.message);
+  }
+
+  // Manejar nuevo mensaje del chat
+  socket.on('chatMessage', async ({ user, message }) => {
+    try {
+      const newMessage = new Messages({ user, message });
+      await newMessage.save();
+      io.emit('chat', newMessage);
+    } catch (error) {
+      logger.error('Error al guardar el mensaje en la base de datos:', error.message);
+    }
+  
+  });
+
+
 });
 
-const PORT = config.port || 3000;
-// Iniciar el servidor con Socket.IO
-server.listen(PORT, () => {
-    logger.info(`App listening on port ${PORT}`);
-});
+//-------------------------- INICIA EL SERVIDOR----------------------------
 
-export default app;
-export { io };
+server.listen(configObject.port, () => {
+  logger.info(`Servidor escuchando en http://localhost:${configObject.port}`);
+});

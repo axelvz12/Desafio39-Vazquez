@@ -1,0 +1,59 @@
+<!-- realTimeProducts.handlebars -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Time Products</title>
+  <link rel="stylesheet" href="/css/realTimeProducts.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+
+</head>
+
+<body>
+  <h1>Lista de Productos en Tiempo Real</h1>
+  <table class="realTimeProducts-table">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+        <tbody id="realTimeProductsList">
+        {{#each products}}
+            <tr>
+            <td>{{this.title}}</td>
+            <td>{{this.price}}</td>
+            <td><button class="deleteButton" data-product-id="{{this.id}}">Eliminar</button></td>
+            </tr>
+
+        {{/each}}
+        </tbody>
+  </table>
+
+  <form id="productForm">
+    <label for="productName">Nombre:</label>
+    <input type="text" id="productName" name="productName" required>
+    <label for="productPrice">Precio:</label>
+    <input type="number" id="productPrice" name="productPrice" required>
+    <label for="productDescription">Descripción:</label>
+    <input type="text" id="productDescription" name="productDescription" required>
+    <label for="productThumbnail">Thumbnail:</label>
+    <input type="text" id="productThumbnail" name="productThumbnail" required>
+    <label for="productCode">Código:</label>
+    <input type="text" id="productCode" name="productCode" required>
+    <label for="productStock">Stock:</label>
+    <input type="number" id="productStock" name="productStock" required>
+    <button type="submit">Agregar Producto</button>
+  </form>
+
+  <button id="btnGoToIndex">Volver a Index</button> 
+
+  <script src="https://cdn.socket.io/4.1.2/socket.io.min.js"></script>
+  <script src="/js/realTimeProducts.js"></script>
+</body>
+
+</html>

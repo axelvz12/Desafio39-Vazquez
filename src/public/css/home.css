@@ -1,0 +1,20 @@
+/* src/public/css/home.css */
+
+
+.home-table {
+    border-collapse: collapse;
+    width: 50%;
+    margin-top: 20px;
+  }
+  
+  .home-table th, .home-table td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  .home-table th {
+    background-color: #f2f2f2;
+  }
+  
+  

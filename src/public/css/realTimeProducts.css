@@ -1,0 +1,18 @@
+/* src/public/css/realTimeProducts.css */
+
+.realTimeProducts-table {
+    border-collapse: collapse;
+    width: 50%;
+    margin-top: 20px;
+  }
+  
+  .realTimeProducts-table th, .realTimeProducts-table td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  .realTimeProducts-table th {
+    background-color: #f2f2f2;
+  }
+  

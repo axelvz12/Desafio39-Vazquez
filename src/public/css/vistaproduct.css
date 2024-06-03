@@ -1,0 +1,77 @@
+/* vistaproduct.css */
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 20px;
+}
+
+.navbar-left a,
+.navbar-right a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+
+.navbar-left a:hover,
+.navbar-right a:hover {
+    color: #28a745; 
+}
+
+main {
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.product-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+}
+
+.product-image-container {
+    width: 50%;
+    padding: 10px;
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.product-info {
+    width: 45%;
+    padding: 10px;
+}
+
+.product-info h1 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #28a745; 
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block; 
+    margin-top: 10px;
+}

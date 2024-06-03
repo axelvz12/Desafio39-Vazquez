@@ -1,0 +1,40 @@
+{{!-- RUTA DE ACCESO: src/views/chat.handlebars --}}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Time Chat</title>
+  <link rel="stylesheet" href="/css/realTimeChat.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+</head>
+
+<body>
+  <h1>Chat en Tiempo Real</h1>
+
+  <div id="chatMessages">
+    <!-- Mostrar los mensajes del chat -->
+    {{#each messages}}
+      <p>{{this.user}}: {{this.message}}</p>
+    {{/each}}
+  </div>
+
+  <form id="chatForm">
+    <label for="user">Usuario:</label>
+    <input type="text" id="user" name="user" required>
+    <label for="message">Mensaje:</label>
+    <input type="text" id="message" name="message" required>
+    <button type="submit">Enviar Mensaje</button>
+  </form>
+
+  <!-- Botón para volver a la página de index -->
+  <button id="btnGoToIndex">Volver a Index</button>
+
+  <script src="https://cdn.socket.io/4.1.2/socket.io.min.js"></script>
+
+  <script src="/js/realTimeChat.js"></script>
+</body>
+
+</html>
