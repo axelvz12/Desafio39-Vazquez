@@ -1,33 +1,19 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu Aplicación</title>
-    <link rel="stylesheet" href="/css/index.css">
-</head>
-<body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <a href="/">Ir al Home</a>
-        <a href="/users">Listado de Usuarios</a>   
-        <a href="/inventario">Inventario</a>   
-        <a href="/chat">Chat</a>   
-        <a href="/realTimeProducts">Ir a Real Time Products</a>
-        <a href="/products">Ir al Listado de Productos</a>
-        <a href="/session/logout" class="logout-button">Logout</a>
-    </div>
 
-    <!-- Contenido principal -->
-    <div class="welcome">
-        <h1>¡Hola!</h1>
-        <p>Bienvenido otra vez, querido admin</p>
-        <p>Nombre: {{user.first_name}}</p>
-        <p>Apellido: {{user.last_name}}</p>
-    </div>
+<section class="encabezado">
+    <h1>Hola, estás en Windward</h1>
+  <div class="usuario">
+    {{#if user}}
+      <h4>Hola,
+        <span class="nombre">{{user.name}}</span>
+        gracias por visitarnos</h4>
+      <p>Tenés rol de
+        <strong>{{#if role}}administrador {{else}} usuario{{/if}}</strong>
+      </p>
+      <button id="logout">Desloguearme</button>
+    {{else}}
+      <p>Aun no estás logueado. Click
+        <a href="/users/login">aquí</a>
+        si querés loguearte</p>
+    {{/if}}
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/buttonHandlers.js"></script>
-</body>
-</html>

@@ -1,58 +1,37 @@
-<!-- index.handlebars -->
+<div>
+  <h1 class="centered">Windward Car &amp; Truck - Battery Store</h1>
+  <h3 class="centered">Formulario de Registro</h3>
+  <p class="centered">Si ya tenés una cuenta con nosotros, logueate haciendo
+    click
+    <a href="/users/login">ACÁ</a></p>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-  <link rel="stylesheet" href="/css/login.css">
-</head>
-<body>
+  <form class="session_form" id="registerForm">
 
-
-
-<form class="form" action="/session/register" method="POST">
-    <p class="form-title">Registrate</p>
-    <div class="input-container">
-        <input placeholder="Ingresa tu nombre" type="text" name="first_name">
+    <div>
+      <label>Nombre</label>
+      <input name="userName" />
     </div>
-    <div class="input-container">
-        <input placeholder="Ingresa tu apellido" type="text" name="last_name">
+    <div>
+      <label>Apellido</label>
+      <input name="userLastName" />
     </div>
-        <div class="input-container">
-        <input placeholder="Ingresa tu edad" type="text" name="age">
+    <div>
+      <label>Email</label>
+      <input name="userEmail" />
     </div>
-    <div class="input-container">
-        <input placeholder="Ingresa tu email" type="email" name="email">
-        <span>
-            <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
-            </svg>
-        </span>
+    <div>
+      <label>Edad</label>
+      <input name="userAge" />
     </div>
-
-    <div class="input-container">
-        <input placeholder="Ingresa tu contraseña" type="password" name="password">
-
-        <span>
-            <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
-                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
-            </svg>
-        </span>
+    <div>
+      <label>Contraseña</label>
+      <input type="password" name="userPassword" id="userPassword" />
     </div>
-    <button class="submit" type="submit">
-        REGISTRAR
-    </button>
+    <button id="verPassword">👀 Ver Password</button>
+    <div><input type="submit" value="Enviar" /></div>
+  </form>
+  <p class="centered">¿Ya tenés una cuenta?
+    <a href="/users/login">LOGUEATE ACÁ</a></p>
+</div>
 
-    <p class="signup-link">
-        ¿Ya tienes una cuenta?
-        <a href="/login">Iniciar sesión</a>
-    </p>
-</form>
-
-
-
-</body>
-</html>
+<script src="/js/register.js"></script>

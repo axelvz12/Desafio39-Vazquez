@@ -1,18 +1,29 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{pageTitle}}</title>
-    {{!-- Agregar aquí cualquier otra etiqueta meta o enlace a hojas de estilo que necesites --}}
-</head>
-<body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Windward Baterías - curso Coder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="shortcut icon" href="/img/favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="/css/{{style}}" />
 
-    <div class="content">
-        {{{body}}}
-    </div>
-
-    
-    {{!-- Agregar aquí cualquier script adicional que necesites --}}
-</body>
+  </head>
+  <body>
+    <nav>
+      <ul class="navigation">
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/admin">Admin Carritos</a></li>
+        <li><a href="/home">Admin Productos</a></li>
+        <li><a href="/catalogo">Catálogo público</a></li>
+        <li class="icono"><a href="/users">🧑‍💻</a></li>
+        <li class="icono"><a href="/chat">🗯️</a></li>
+      </ul>
+    </nav>
+    {{{body}}}
+  </body>
 </html>
